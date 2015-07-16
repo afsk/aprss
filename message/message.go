@@ -70,7 +70,7 @@ func (m *AprsMessage) GetAck() (string, error) {
 		return "", errors.New("Empty To field")
 	}
 
-	ack := m.To + ">TCPIP*::" + padRight(m.From, " ", 9) + ":ack" + m.Code
+	ack := m.To + ">APRSS,TCPIP*::" + padRight(m.From, " ", 9) + ":ack" + m.Code
 	return ack, nil
 }
 
@@ -88,7 +88,7 @@ func (m *AprsMessage) GetData() (string, error) {
 		return "", errors.New("Empty Message field")
 	}
 
-	data := m.From + ">TCPIP*::" + padRight(m.To, " ", 9) + ":" + m.Message
+	data := m.From + ">APRSS,TCPIP*::" + padRight(m.To, " ", 9) + ":" + m.Message
 	if len(m.Code) > 0 {
 		data += "{" + m.Code
 	}

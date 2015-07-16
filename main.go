@@ -29,6 +29,7 @@ import (
 	"github.com/yo3igc/aprss/message"
 	"net"
 	"strings"
+	"io"
 )
 
 const serviceCallsign string = ""
@@ -58,7 +59,12 @@ func main() {
 	for {
 		line, err := readLine()
 		if err != nil {
-			panic(err.Error())
+			if err == io.EOF {
+				openConnection()
+				continue
+			} else {
+				panic(err.Error())
+			}
 		}
 		if len(line) < 1 || line[0] == '#' {
 			continue
@@ -105,7 +111,7 @@ func handleLine(rawData string) {
 		retPacket.Message = "pong"
 		retRawData, err := retPacket.GetData()
 		if err == nil {
-			aprsis.SendPacket(retRawData, serviceCallsign, servicePassword)
+			aprsis.SendPacket(retRawData, conn)
 			fmt.Println(retRawData)
 		}
 	}
@@ -114,7 +120,7 @@ func handleLine(rawData string) {
 func sendAck(packet *message.AprsMessage) {
 	ack, err := packet.GetAck()
 	if err == nil {
-		aprsis.SendPacket(ack, serviceCallsign, servicePassword)
+		aprsis.SendPacket(ack, conn)
 		fmt.Println(ack)
 	}
 }

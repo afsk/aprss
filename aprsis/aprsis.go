@@ -23,9 +23,7 @@
 package aprsis
 
 import (
-	"bytes"
-	"fmt"
-	"net/http"
+	"net"
 	"strconv"
 	"strings"
 	"time"
@@ -53,22 +51,7 @@ func GeneratePassword(callsign string) string {
 	return result
 }
 
-func SendPacket(packet string, user string, password string) {
+func SendPacket(packet string, conn net.Conn) {
 	time.Sleep(2 * time.Second)
-	packet = fmt.Sprintf("user %s pass %s vers aprss 0.1\r\n%s\r\n", user, password, packet)
-
-	req, err := http.NewRequest("POST", "http://srvr.aprs-is.net:8080", bytes.NewBufferString(packet))
-	if err != nil {
-		return
-	}
-	req.Header.Add("Accept-Type", "text/plain")
-	req.Header.Add("Content-Type", "application/octet-stream")
-	req.Header.Add("Content-Length", string(len(packet)))
-
-	client := &http.Client{}
-	resp, er := client.Do(req)
-	if er != nil {
-		return
-	}
-	defer resp.Body.Close()
+	conn.Write([]byte(packet + "\r\n"))
 }
