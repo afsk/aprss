@@ -25,14 +25,19 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/yo3igc/aprss/aprsfi"
 	"github.com/yo3igc/aprss/aprsis"
 	"github.com/yo3igc/aprss/message"
+	"github.com/yo3igc/aprss/weather"
+	"io"
 	"net"
 	"strings"
-	"io"
+	"time"
 )
 
 const serviceCallsign string = ""
+const aprsfiApiKey string = ""  // get from aprs.fi
+const weatherApiKey string = "" // get from openweathermap.org
 
 var servicePassword string
 
@@ -104,16 +109,39 @@ func handleLine(rawData string) {
 		sendAck(packet)
 	}
 
-	if strings.ToLower(packet.Message) == "ping" {
-		retPacket := new(message.AprsMessage)
-		retPacket.From = serviceCallsign
-		retPacket.To = packet.From
-		retPacket.Message = "pong"
-		retRawData, err := retPacket.GetData()
-		if err == nil {
-			aprsis.SendPacket(retRawData, conn)
-			fmt.Println(retRawData)
+	returnString := ""
+	switch {
+	case strings.ToLower(packet.Message) == "ping":
+		returnString = "pong"
+		break
+
+	case strings.ToLower(packet.Message) == "w":
+		callsign, err1 := aprsfi.GetCallsign(packet.From, aprsfiApiKey)
+		if err1 != nil {
+			returnString = err1.Error()
+			break
 		}
+		w, err2 := weather.GetByLocation(callsign.Entries[0].Lat, callsign.Entries[0].Lng, weatherApiKey)
+		if err2 != nil {
+			returnString = err2.Error()
+			break
+		}
+		ts := time.Unix(int64(w.Dt), 0)
+		returnString = fmt.Sprintf("%s, %s, %.2fC, % dhPa, Hum %d%%", ts.UTC().Format("2006-01-02 15:04 MST"), w.Weather[0].Description, w.Main.Temp/10, w.Main.Pressure, w.Main.Humidity)
+		break
+
+	default:
+		return
+	}
+
+	retPacket := new(message.AprsMessage)
+	retPacket.From = serviceCallsign
+	retPacket.To = packet.From
+	retPacket.Message = returnString
+	retRawData, err := retPacket.GetData()
+	if err == nil {
+		aprsis.SendPacket(retRawData, conn)
+		fmt.Println(retRawData)
 	}
 }
 
