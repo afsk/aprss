@@ -133,7 +133,7 @@ func handleLine(rawData string) {
 			break
 		}
 		ts := time.Unix(int64(w.Dt), 0)
-		returnString = fmt.Sprintf("%s, %s, %.1fC, %dhPa, Hum %d%%", ts.UTC().Format("2006-01-02 15:04 MST"), w.Weather[0].Description, w.Main.Temp/10, w.Main.Pressure, w.Main.Humidity)
+		returnString = fmt.Sprintf("%s, %s, %.1fC, %dhPa, Hum %d%%", ts.UTC().Format("2006-01-02 15:04 MST"), w.Weather[0].Description, w.Main.Temp, w.Main.Pressure, w.Main.Humidity)
 		break
 
 	default:

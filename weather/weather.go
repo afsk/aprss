@@ -94,7 +94,7 @@ func GetByLocation(lat string, lon string, apiKey string) (WeatherResponse, erro
 func get(query string, apiKey string) (WeatherResponse, error) {
 	var weather WeatherResponse
 
-	resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?APPID=" + apiKey + "&unit=metric&" + query)
+	resp, err := http.Get("http://api.openweathermap.org/data/2.5/weather?APPID=" + apiKey + "&units=metric&" + query)
 	if err != nil {
 		return weather, errors.New("Error getting weather data")
 	}
